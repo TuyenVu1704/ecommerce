@@ -7,6 +7,7 @@ import {
 } from '../middlewares/jwt.js';
 
 import jwt from 'jsonwebtoken';
+import { passwordReset } from '../services/userServices.js';
 
 const registerUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -148,10 +149,30 @@ const logOutUser = asyncHandler(async (req, res) => {
   });
 });
 
+// Reset Password
+// Flow chart:
+// client gui email len server
+// Server check mail co hop le hay khong => gui mail ve client kem theo link (password chagne token)
+// Client check mail
+// client gui api kem token len server
+// server checktoken co giong voi token ma server gui mail hay khong
+
+// Ham check mail va gui mail
+
+const forgotPassword = asyncHandler(async (req, res) => {
+  // Lay  POST + PUT lay o body
+  // GET + DELETE lay o query
+  const { email } = req.query;
+  const exitedUser = await passwordReset({ email });
+  const html = `Vui long nhap vao link de reset password <a href=${process.env.URL_SERVER}>Click here</a>`;
+  //
+});
+
 export {
   registerUser,
   loginUser,
   getCurrentUSer,
   refeshAccessToKen,
   logOutUser,
+  forgotPassword,
 };
