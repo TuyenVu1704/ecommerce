@@ -1,22 +1,26 @@
 import crypto from 'crypto';
-import User from '../models/User';
+import User from '../models/User.js';
 
 const passwordReset = async ({ email }) => {
   if (!email) throw new Error('Missing Email');
   const user = await User.findOne({ email });
+
   if (!user) throw new Error('User not found');
   const resetToken = crypto.randomBytes(32).toString('hex');
+
   const passwordResetToken = crypto
-    .createHash('sha26')
+    .createHash('sha256')
     .update(resetToken)
     .digest('hex');
   const passwordResetExpire = Date.now() + 5 * 60 * 1000;
-  const newPasswordReset = await User.create({
-    ...user,
-    passwordResetToken,
-    passwordResetExpire,
-  });
-  return newPasswordReset;
+
+  const newPasswordReset = await User.findOneAndUpdate(
+    { email },
+    { passwordResetToken, passwordResetExpire },
+    { new: true }
+  );
+
+  return resetToken;
 };
 
 export { passwordReset };

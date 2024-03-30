@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  forgotPassword,
   getCurrentUSer,
   logOutUser,
   loginUser,
@@ -16,4 +17,5 @@ router.post('/login', loginUser);
 router.get('/current', verifyToken, getCurrentUSer);
 router.post('/refeshtoken', refeshAccessToKen);
 router.get('/logout', logOutUser);
+router.get('/forgotpassword', forgotPassword);
 export default router;

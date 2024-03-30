@@ -8,6 +8,7 @@ import {
 
 import jwt from 'jsonwebtoken';
 import { passwordReset } from '../services/userServices.js';
+import sendMail from '../ultils/sendMail.js';
 
 const registerUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -163,9 +164,20 @@ const forgotPassword = asyncHandler(async (req, res) => {
   // Lay  POST + PUT lay o body
   // GET + DELETE lay o query
   const { email } = req.query;
-  const exitedUser = await passwordReset({ email });
-  const html = `Vui long nhap vao link de reset password <a href=${process.env.URL_SERVER}>Click here</a>`;
+  const resetToken = await passwordReset({ email });
+
+  const html = `Vui long nhap vao link de reset password <a href=${process.env.URL_SERVER}/api/user/reset-password/${resetToken}>Click here</a>`;
   //
+  const data = {
+    email: email,
+    html,
+  };
+
+  const result = await sendMail(data);
+  return res.status(200).json({
+    success: true,
+    result,
+  });
 });
 
 export {
