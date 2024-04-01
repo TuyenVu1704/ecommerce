@@ -7,9 +7,9 @@ import {
 } from '../middlewares/jwt.js';
 
 import jwt from 'jsonwebtoken';
-import { passwordReset } from '../services/userServices.js';
+import { getAllUsers, passwordReset } from '../services/userServices.js';
 import sendMail from '../ultils/sendMail.js';
-
+import crypto from 'crypto';
 const registerUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
@@ -58,19 +58,19 @@ const loginUser = asyncHandler(async (req, res) => {
 
   if (matchPassword && extitedUser) {
     // Tach pass va role ra khoi user
-    const { password, role, ...userData } = extitedUser.toObject();
+    const { password, role, refeshToken, ...userData } = extitedUser.toObject();
     // tao accesstoKen va refeshToken
     const accessToken = generateAccessToken(extitedUser._id, role);
-    const refeshToken = generateRefeshToken(extitedUser._id);
+    const newrefeshToken = generateRefeshToken(extitedUser._id);
     // Update refeshToken vao database, luu y: de new = true de tra ve gia tri sau khi update
     await User.findByIdAndUpdate(
       extitedUser._id,
-      { refeshToken },
+      { refeshToken: newrefeshToken },
       { new: true }
     );
 
     // Luu refeshtoken vao cookie
-    res.cookie('refeshtoken', refeshToken, {
+    res.cookie('refeshtoken', newrefeshToken, {
       httpOnly: true,
       maxAge: 60 * 1000,
     });
@@ -166,7 +166,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
   const { email } = req.query;
   const resetToken = await passwordReset({ email });
 
-  const html = `Vui long nhap vao link de reset password <a href=${process.env.URL_SERVER}/api/user/reset-password/${resetToken}>Click here</a>`;
+  const html = `Vui long nhap vao link de reset password <a href="${process.env.URL_SERVER}/api/user/reset-password/${resetToken}">Click here</a>`;
   //
   const data = {
     email: email,
@@ -180,6 +180,46 @@ const forgotPassword = asyncHandler(async (req, res) => {
   });
 });
 
+// Reset Password
+
+const resetPassword = asyncHandler(async (req, res) => {
+  const { token, password } = req.body;
+  if (!password || !token) throw new Error('Missing Password or Token');
+  const passwordResetToken = crypto
+    .createHash('sha256')
+    .update(token)
+    .digest('hex');
+  const user = await User.findOne({
+    passwordResetToken,
+    passwordResetExpire: { $gt: Date.now() },
+  });
+  if (!user) throw new Error('Invalid Reset Token');
+  const saltHash = bcrypt.genSaltSync(parseInt(process.env.SALT_HASH));
+  const hashPassword = await bcrypt.hash(password, saltHash);
+  await User.findByIdAndUpdate(user._id, {
+    password: hashPassword,
+    passwordResetToken: ' ',
+    passwordResetExpire: ' ',
+    passwordChangeAt: Date.now(),
+    new: true,
+  });
+  return res.status(200).json({
+    success: user ? true : false,
+    mes: user ? 'Update passwrod' : 'Something went wrong',
+  });
+});
+
+// Get All User
+
+const getAllUser = asyncHandler(async (req, res) => {
+  const users = await getAllUsers();
+
+  return res.status(200).json({
+    success: users ? true : false,
+    users,
+  });
+});
+
 export {
   registerUser,
   loginUser,
@@ -187,4 +227,6 @@ export {
   refeshAccessToKen,
   logOutUser,
   forgotPassword,
+  resetPassword,
+  getAllUser,
 };

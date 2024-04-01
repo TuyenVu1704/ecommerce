@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import User from '../models/User.js';
-
+import asyncHandler from 'express-async-handler';
 const passwordReset = async ({ email }) => {
   if (!email) throw new Error('Missing Email');
   const user = await User.findOne({ email });
@@ -23,4 +23,11 @@ const passwordReset = async ({ email }) => {
   return resetToken;
 };
 
-export { passwordReset };
+// Get ALL USER
+
+const getAllUsers = asyncHandler(async () => {
+  const response = await User.find();
+  return response;
+});
+
+export { passwordReset, getAllUsers };
