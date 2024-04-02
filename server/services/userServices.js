@@ -41,7 +41,8 @@ const deleteUsersrv = asyncHandler(async (_id) => {
 // Update User
 
 const updateUsersrv = asyncHandler(async (_id, data) => {
-  if (!_id || Object.keys(data).length === 0) throw new Error('Missing Input');
+  if (!_id || Object.keys(data || []).length === 0)
+    throw new Error('Missing Input');
 
   const result = await User.findByIdAndUpdate(_id, data, {
     new: true,
@@ -52,8 +53,9 @@ const updateUsersrv = asyncHandler(async (_id, data) => {
 
 //// Update User by Admin
 
-const updateUseByAdminrsrv = asyncHandler(async (uid, data) => {
-  if (Object.keys(data).length === 0) throw new Error('Missing Input');
+const updateUserByAdminrsrv = asyncHandler(async (uid, data) => {
+  console.log(uid, data);
+  if (Object.keys(data || []).length === 0) throw new Error('Missing Input');
 
   const result = await User.findByIdAndUpdate(uid, data, {
     new: true,
@@ -66,5 +68,5 @@ export {
   getAllUsers,
   deleteUsersrv,
   updateUsersrv,
-  updateUseByAdminrsrv,
+  updateUserByAdminrsrv,
 };

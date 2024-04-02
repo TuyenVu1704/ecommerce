@@ -12,6 +12,7 @@ import {
   getAllUsers,
   passwordReset,
   updateUsersrv,
+  updateUserByAdminrsrv,
 } from '../services/userServices.js';
 import sendMail from '../ultils/sendMail.js';
 import crypto from 'crypto';
@@ -252,7 +253,8 @@ const updateUser = asyncHandler(async (req, res) => {
 const updateUserByAdmin = asyncHandler(async (req, res) => {
   // Lay _id cua verifytoken tra ve
   const { uid } = req.params;
-  const newUser = await updateUsersrv(uid, req.body);
+
+  const newUser = await updateUserByAdminrsrv(uid, req.body);
   return res.status(200).json({
     success: newUser ? true : false,
     updateUser: newUser ? newUser : 'Some thing went wrong',
