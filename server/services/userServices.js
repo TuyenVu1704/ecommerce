@@ -26,8 +26,45 @@ const passwordReset = async ({ email }) => {
 // Get ALL USER
 
 const getAllUsers = asyncHandler(async () => {
-  const response = await User.find();
+  const response = await User.find().select('-refeshToken -password -role');
   return response;
 });
 
-export { passwordReset, getAllUsers };
+// Delete User
+
+const deleteUsersrv = asyncHandler(async (_id) => {
+  if (!_id) throw new Error('Missing input');
+  const result = await User.findByIdAndDelete(_id);
+  return result;
+});
+
+// Update User
+
+const updateUsersrv = asyncHandler(async (_id, data) => {
+  if (!_id || Object.keys(data).length === 0) throw new Error('Missing Input');
+
+  const result = await User.findByIdAndUpdate(_id, data, {
+    new: true,
+  }).select('-password -role');
+
+  return result;
+});
+
+//// Update User by Admin
+
+const updateUseByAdminrsrv = asyncHandler(async (uid, data) => {
+  if (Object.keys(data).length === 0) throw new Error('Missing Input');
+
+  const result = await User.findByIdAndUpdate(uid, data, {
+    new: true,
+  }).select('-password -role');
+
+  return result;
+});
+export {
+  passwordReset,
+  getAllUsers,
+  deleteUsersrv,
+  updateUsersrv,
+  updateUseByAdminrsrv,
+};

@@ -7,7 +7,12 @@ import {
 } from '../middlewares/jwt.js';
 
 import jwt from 'jsonwebtoken';
-import { getAllUsers, passwordReset } from '../services/userServices.js';
+import {
+  deleteUsersrv,
+  getAllUsers,
+  passwordReset,
+  updateUsersrv,
+} from '../services/userServices.js';
 import sendMail from '../ultils/sendMail.js';
 import crypto from 'crypto';
 const registerUser = asyncHandler(async (req, res) => {
@@ -220,6 +225,39 @@ const getAllUser = asyncHandler(async (req, res) => {
   });
 });
 
+// Delete User
+const deleteUser = asyncHandler(async (req, res) => {
+  const { _id } = req.query;
+  const newUser = await deleteUsersrv(_id);
+  return res.status(200).json({
+    success: newUser ? true : false,
+    delleteUser: newUser
+      ? `User with email ${newUser.email} deleted`
+      : `No User delete`,
+  });
+});
+
+//Update User
+const updateUser = asyncHandler(async (req, res) => {
+  // Lay _id cua verifytoken tra ve
+  const { _id } = req.user;
+  const newUser = await updateUsersrv(_id, req.body);
+  return res.status(200).json({
+    success: newUser ? true : false,
+    updateUser: newUser ? newUser : 'Some thing went wrong',
+  });
+});
+
+//Update User by Admin
+const updateUserByAdmin = asyncHandler(async (req, res) => {
+  // Lay _id cua verifytoken tra ve
+  const { uid } = req.params;
+  const newUser = await updateUsersrv(uid, req.body);
+  return res.status(200).json({
+    success: newUser ? true : false,
+    updateUser: newUser ? newUser : 'Some thing went wrong',
+  });
+});
 export {
   registerUser,
   loginUser,
@@ -229,4 +267,7 @@ export {
   forgotPassword,
   resetPassword,
   getAllUser,
+  deleteUser,
+  updateUser,
+  updateUserByAdmin,
 };
