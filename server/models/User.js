@@ -1,6 +1,5 @@
 import mongoose from 'mongoose';
-import bcrypt from 'bcrypt';
-import dotenv from 'dotenv';
+
 // Declare the Schema of the Mongo model\
 
 const Schema = mongoose.Schema;
